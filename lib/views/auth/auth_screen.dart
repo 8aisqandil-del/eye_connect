@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../guest/home_dashboard.dart'; // 🚀 FIXED IMPORT: Points directly to your guest homepage
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -229,6 +230,27 @@ class _AuthScreenState extends State<AuthScreen> {
                       : Text(_isSignUp ? "Create account" : "Sign In", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                   ),
                   const SizedBox(height: 20),
+
+                  // 🚀 FIXED BYPASS ACTION BUTTON
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: const Color(0xFF0F172A),
+                      elevation: 0,
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.person_outline_rounded, color: Color(0xFF64748B), size: 18),
+                    label: const Text("Return to Home Dashboard", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    onPressed: _isLoading ? null : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HomeDashboard()), // 🚀 FIXED: Instantly links to your newly structured guest dashboard class
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

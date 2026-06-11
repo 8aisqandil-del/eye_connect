@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'views/auth/auth_screen.dart'; 
-import 'views/donor/donor_dashboard.dart';
-import 'views/admin/admin_dashboard.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'views/guest/home_dashboard.dart';
 import 'views/volunteer/volunteer_dashboard.dart';
+import 'views/donor/donor_dashboard.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -12,26 +11,31 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, authSnapshot) {
-        
-        // Tier 1: If no user is logged in, show the Auth UI Card card layout
-        if (!authSnapshot.hasData) {
-          return const AuthScreen(); 
+      builder: (context, snapshot) {
+        // 1. Show loading spinner while Firebase checks token status
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF0F172A)),
+            ),
+          );
         }
 
-        User user = authSnapshot.data!;
-        String email = user.email?.toLowerCase() ?? '';
+        final User? user = snapshot.data;
 
-        // 🚀 THE ULTIMATE RESET ROUTER:
-        // Bypasses database rules completely for your demo viewport.
-        // It routes instantly based on the email tag template you type in!
-        if (email == 'admin@gmail.com' || email.endsWith('@eyeconnect.org')) {
-          return const AdminDashboard();
-        } else if (email.contains('donor')) {
-          return const DonorDashboard();
+        // 2. CASE 1: No active session -> Drop them on your clean guest dashboard
+        if (user == null) {
+          return const HomeDashboard();
+        }
+
+        // 3. CASE 2: Verified active session -> Route based on email tags
+        if (user.email == 'admin@gmail.com') {
+          // You can point this to your admin workspace panel later
+          return const Scaffold(body: Center(child: Text("Admin Portal Active")));
+        } else if (user.email != null && user.email!.contains('donor')) {
+          return const DonorDashboard(); // Opens your new JOD tracking dashboard
         } else {
-          // Every other standard account or Google click opens your Field Station!
-          return const VolunteerDashboard();
+          return const VolunteerDashboard(); // Opens your new 8aisqandil Field Station
         }
       },
     );

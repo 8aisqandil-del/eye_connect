@@ -1,198 +1,216 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'pledge_form.dart';
 
 class DonorDashboard extends StatelessWidget {
   const DonorDashboard({super.key});
 
-  void _handleSignOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        title: const Text(
-          "Donor Workspace",
-          style: TextStyle(color: Color(0xFF10172A), fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-            onPressed: () => _handleSignOut(context),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Header Card
+            // 🚀 DONOR GRADIENT HERO PANEL
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.teal,
-                borderRadius: BorderRadius.circular(16),
+              width: double.infinity,
+              padding: const EdgeInsets.all(32),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1E1B4B), Color(0xFF1E3A8A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Welcome Back, Donor!",
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                children: const [
+                  SizedBox(height: 16),
+                  Text("DONOR IMPACT DASHBOARD", style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   SizedBox(height: 6),
-                  Text(
-                    "Your contributions directly power global mobile vision screening clinics.",
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
+                  Text("Welcome, 8aisqandil! 💝", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5)), // 🚀 FIXED: FontWeight.w900
+                  SizedBox(height: 6),
+                  Text("Track your contributions and see the real impact of your generosity across\nour eye care campaigns.", style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4)),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
 
-            const Text(
-              "Quick Actions",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF10172A)),
-            ),
-            const SizedBox(height: 12),
-
-            // Action Panel Grid Rows
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.volunteer_activism_rounded,
-                    title: "Pledge Donation",
-                    color: Colors.teal,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const PledgeForm()),
-                      );
-                    },
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 🔔 NOTICE ALERT BANNER
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFEF3C7)),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.notifications_none_rounded, color: Colors.amber, size: 18),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            "Q1 Donation Report Available  •  The Q1 2025 financial transparency report is now available for review in the donor dashboard.",
+                            style: TextStyle(color: Color(0xFF451A03), fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        Text("2/2", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.history_rounded,
-                    title: "History Logs",
-                    color: const Color(0xFF64748B),
-                    onTap: () {
-                      // Placeholder for history module
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-            // Impact Metrics Section
-            const Text(
-              "Your Contribution Impact Tracker",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF10172A)),
-            ),
-            const SizedBox(height: 12),
-
-            // 🚀 DEVELOPER FIX: Live StreamBuilder calculating metrics straight from Firestore
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('pledges')
-                  .where('donorEmail', isEqualTo: user?.email)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: CircularProgressIndicator(color: Colors.teal),
-                  ));
-                }
-
-                int totalPledgesCount = 0;
-                double totalFinancialContribution = 0.0;
-
-                if (snapshot.hasData) {
-                  final docs = snapshot.data!.docs;
-                  totalPledgesCount = docs.length;
-
-                  for (var doc in docs) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    // Accumulate all financial amounts logged under this donor
-                    totalFinancialContribution += (data['supportAmountJD'] ?? 0.0);
-                  }
-                }
-
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // 📊 DONATION METRICS ROW
+                  Row(
                     children: [
-                      _buildMetricItem("$totalPledgesCount", "Active Pledges"),
-                      Container(height: 40, width: 1, color: const Color(0xFFE2E8F0)),
-                      _buildMetricItem("JD ${totalFinancialContribution.toStringAsFixed(0)}", "Total Contributed"),
+                      Expanded(child: _buildMetricBox("TOTAL PLEDGED", "46,500 JOD", "Across all campaigns", Icons.monetization_on_outlined, const Color(0xFF2E2C7A), true)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildMetricBox("AMOUNT RECEIVED", "40,000 JOD", "Successfully processed", Icons.trending_up_rounded, Colors.white, false)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildMetricBox("EQUIPMENT ITEMS", "2", "Donations tracked", Icons.widgets_outlined, Colors.white, false)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildMetricBox("ACTIVE PLEDGES", "2", "Pending fulfillment", Icons.favorite_border_rounded, Colors.white, false)),
                     ],
                   ),
-                );
-              },
-            ),
+                  const SizedBox(height: 32),
+
+                  // 💸 DATA TABLES
+                  _buildSectionHeader("Monetary Pledges", "4 records", Icons.payments_outlined),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
+                    child: Table(
+                      columnWidths: const {0: FlexColumnWidth(3), 1: FlexColumnWidth(3), 2: FlexColumnWidth(2), 3: FlexColumnWidth(2), 4: FlexColumnWidth(2)},
+                      children: [
+                        _buildTableHeaderRow(["DONOR", "CAMPAIGN", "AMOUNT", "STATUS", "DATE"]),
+                        _buildTableDataRow(["Dr. Sami Khoury", "Refugee Camp Initiative", "5,000 JOD", "pledged", "Jun 9, 2026"], Colors.purple),
+                        _buildTableDataRow(["UAE Red Crescent", "Cross-Border Eye Care", "25,000 JOD", "received", "Jun 9, 2026"], Colors.green),
+                        _buildTableDataRow(["Khalid Mansour", "Spring Eye Camp 2025", "1,500 JOD", "pledged", "Jun 9, 2026"], Colors.purple),
+                        _buildTableDataRow(["Jordan Vision Foundation", "Spring Eye Camp 2025", "15,000 JOD", "received", "Jun 9, 2026"], Colors.green),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  _buildSectionHeader("Equipment Sponsorship", "2 items", Icons.biotech_outlined),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
+                    child: Table(
+                      columnWidths: const {0: FlexColumnWidth(3), 1: FlexColumnWidth(3), 2: FlexColumnWidth(1.5), 3: FlexColumnWidth(2), 4: FlexColumnWidth(2.5)},
+                      children: [
+                        _buildTableHeaderRow(["SPONSOR", "EQUIPMENT", "QTY", "STATUS", "CAMPAIGN"]),
+                        _buildTableDataRow(["Al-Aman Medical Supplies", "Portable Autorefractor", "3", "deployed", "Equipment Drive Q1"], Colors.teal),
+                        _buildTableDataRow(["OptoJordan Labs", "Slit Lamp Station", "1", "in-transit", "Karak Camp Expansion"], Colors.blue),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () => FirebaseAuth.instance.signOut(),
+                      icon: const Icon(Icons.logout_rounded, size: 16, color: Color(0xFF64748B)),
+                      label: const Text("Exit Dashboard", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontSize: 13)),
+                    ),
+                  )
+                ],
+              ),
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon, 
-    required String title, 
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildMetricBox(String title, String val, String desc, IconData icon, Color bg, bool isDark) {
     return Container(
-      height: 110,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: isDark ? null : Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 10),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF10172A))),
+              Text(title, style: TextStyle(color: isDark ? Colors.white60 : const Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              Icon(icon, color: isDark ? Colors.tealAccent : const Color(0xFF94A3B8), size: 18),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(val, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 22, fontWeight: FontWeight.w900)), // 🚀 FIXED: FontWeight.w900
+          const SizedBox(height: 4),
+          Text(desc, style: TextStyle(color: isDark ? Colors.white38 : const Color(0xFF94A3B8), fontSize: 11)),
+        ],
       ),
     );
   }
 
-  Widget _buildMetricItem(String value, String subtitle) {
-    return Column(
+  Widget _buildSectionHeader(String title, String count, IconData icon) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal)),
-        const SizedBox(height: 4),
-        Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+        Row(
+          children: [
+            Icon(icon, color: const Color(0xFF0F172A), size: 18),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 15)),
+          ],
+        ),
+        Text(count, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
       ],
+    );
+  }
+
+  TableRow _buildTableHeaderRow(List<String> cells) {
+    return TableRow(
+      decoration: const BoxDecoration(color: Color(0xFFF8FAFC), borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
+      children: cells.map((cell) => Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(cell, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+      )).toList(),
+    );
+  }
+
+  TableRow _buildTableDataRow(List<String> cells, Color statusColor) {
+    return TableRow(
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9)))),
+      children: cells.asMap().entries.map((entry) {
+        int idx = entry.key;
+        String text = entry.value;
+
+        if (idx == 3) {
+          return Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                child: Text(text, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          );
+        }
+
+        bool isBoldVal = idx == 2;
+        return Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Text(
+            text, 
+            style: TextStyle(fontSize: 12, color: const Color(0xFF334155), fontWeight: isBoldVal ? FontWeight.bold : FontWeight.normal),
+          ),
+        );
+      }).toList(),
     );
   }
 }
