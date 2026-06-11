@@ -25,17 +25,16 @@ class AuthGate extends StatelessWidget {
 
         // 2. CASE 1: No active session -> Drop them on your clean guest dashboard
         if (user == null) {
-          return const HomeDashboard();
+          return HomeDashboard(); // 🚀 FIXED: Removed 'const' so the dynamic UI lists can render cleanly
         }
 
         // 3. CASE 2: Verified active session -> Route based on email tags
         if (user.email == 'admin@gmail.com') {
-          // You can point this to your admin workspace panel later
           return const Scaffold(body: Center(child: Text("Admin Portal Active")));
         } else if (user.email != null && user.email!.contains('donor')) {
-          return const DonorDashboard(); // Opens your new JOD tracking dashboard
+          return const DonorDashboard(); 
         } else {
-          return const VolunteerDashboard(); // Opens your new 8aisqandil Field Station
+          return const VolunteerDashboard(); 
         }
       },
     );
